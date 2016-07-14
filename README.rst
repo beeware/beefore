@@ -4,7 +4,7 @@
 Beefore
 =======
 
-Tools to run pre-merge checks on a project.
+Performs pre-merge checks (such as code style) on a pull request.
 
 Quickstart
 ----------

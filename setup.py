@@ -1,4 +1,4 @@
-#/usr/bin/env python
+#!/usr/bin/env python
 import io
 import re
 from setuptools import setup, find_packages
@@ -19,7 +19,7 @@ with io.open('README.rst', encoding='utf8') as readme:
 setup(
     name='beefore',
     version=version,
-    description='Tools to perform pre-merge checks on a project.',
+    description='Performs pre-merge checks (such as code style) on a pull request.',
     long_description=long_description,
     author='Russell Keith-Magee',
     author_email='russell@keith-magee.com',
@@ -33,6 +33,7 @@ setup(
     },
     install_requires=[
         'github3.py',
+        'flake8>=3.0.0b2'
     ],
     license='New BSD',
     classifiers=[
