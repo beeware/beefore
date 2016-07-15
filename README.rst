@@ -1,5 +1,5 @@
-.. image:: http://pybee.org/projects/project/tools/beefore/beefore-72.png
-    :target: https://pybee.org/projects/project/tools/beefore
+.. image:: http://pybee.org/project/projects/tools/beefore/beefore-72.png
+    :target: https://pybee.org/project/projects/tools/beefore
 
 Beefore
 =======
