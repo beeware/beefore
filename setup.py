@@ -33,7 +33,8 @@ setup(
     },
     install_requires=[
         'github3.py',
-        'flake8>=3.0.0b2'
+        'PyYAML',
+        'flake8>=3.0.0b2',
     ],
     license='New BSD',
     classifiers=[
