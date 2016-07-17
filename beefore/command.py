@@ -38,6 +38,7 @@ class beefore(Command):
         self.directory = None
 
     def finalize_options(self):
+        print("os.environ = ", os.environ)
         if self.username is None:
             print(
                 '\n'
@@ -53,8 +54,7 @@ class beefore(Command):
             except KeyError:
                 print(
                     '\n'
-                    'GitHub password not specified. Either provide a --password argument,\n'
-                    'or export BEEFORE_GITHUB_PASSWORD into your environment',
+                    'GitHub password not specified. You need to export BEEFORE_GITHUB_PASSWORD into your environment',
                     file=sys.stderr
                 )
                 sys.exit(2)
