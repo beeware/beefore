@@ -25,15 +25,17 @@ class beefore(Command):
          'The hash of the commit to be checked.'),
         ('pull-request=', 'p',
          'The pull request containing the commit.'),
+        ('directory=', 'd',
+         'The directory holding the checked out repository.'),
     ]
 
     def initialize_options(self):
         self.username = None
         self.password = None
-        self.owner = None
         self.repository = None
         self.commit_hash = None
         self.pull_request = None
+        self.directory = None
 
     def finalize_options(self):
         if self.username is None:
@@ -143,7 +145,7 @@ class beefore(Command):
             check_module = self.check_modules[check]
             print("Performing %s check..." % check_module.label)
             try:
-                passed = check_module.check(self.user, pull_request, commit)
+                passed = check_module.check(pull_request, commit, self.directory)
 
                 if passed:
                     state = SUCCESS
@@ -159,7 +161,7 @@ class beefore(Command):
                     description=check_module.description(state)
                 )
             except Exception as e:
-                print(e, file=sys.stderr)
+                print(e, e.errors, file=sys.stderr)
                 problem_checks.append(check)
                 self.report_status(
                     commit=commit,

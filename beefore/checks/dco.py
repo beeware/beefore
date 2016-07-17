@@ -12,7 +12,7 @@ DESCRIPTION = {
 }
 
 
-def check(reviewer, pull_request, commit, config):
+def check(pull_request, commit, directory, config):
     expected_signoff = '\n\nSigned-off-by: %(name)s <%(email)s>' % commit.commit.committer
 
     if expected_signoff in commit.message:

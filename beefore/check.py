@@ -5,7 +5,7 @@ from .constants import *
 
 
 class CheckModule:
-    def __init__(self, path, config=None):
+    def __init__(self, path, config):
         self.path = path
         self.config = config
         try:
@@ -35,5 +35,5 @@ class CheckModule:
             }[state]
         ) % context
 
-    def check(self, reviewer, pull_request, commit):
-        return self.module.check(reviewer, pull_request, commit, self.config)
+    def check(self, pull_request, commit, directory):
+        return self.module.check(pull_request, commit, directory, self.config)

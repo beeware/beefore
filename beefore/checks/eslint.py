@@ -1,5 +1,5 @@
 ###########################################################################
-# Check if any of the Python files touched by the commit have
+# Check if any of the Javascript files touched by the commit have
 # code style problems.
 ###########################################################################
 import os.path
@@ -7,6 +7,8 @@ import re
 import requests
 import sys
 import subprocess
+
+from beefore import diff
 
 
 LABEL = 'ESLint'
@@ -31,8 +33,17 @@ class Lint:
     def __str__(self):
         return 'Line %s, col %s: [%s] %s' % (self.line, self.col, self.code, self.description)
 
-    def add_comment(self, reviewer, commit):
-        pass
+    def add_comment(self, pull_request, commit, position):
+        pull_request.create_review_comment(
+            body="At column %(col)d: [(%(code)s) %(description)s](http://.../%(code)s)" % {
+                'col': self.col,
+                'code': self.code,
+                'description': self.description
+            },
+            commit_id=commit.sha,
+            path=self.filename,
+            position=position,
+        )
 
     @staticmethod
     def find(filename, content, config):
@@ -53,11 +64,11 @@ class Lint:
 
         matches = LINT_OUTPUT.findall(out.decode('utf-8'))
         problems = []
-        for filename, line, col, level, description, code in matches:
+        for full_name, line, col, level, description, code in matches:
             problems.append(Lint(
                 filename=filename,
-                line=line,
-                col=col,
+                line=int(line),
+                col=int(col),
                 code=code,
                 description=description,
             ))
@@ -65,21 +76,42 @@ class Lint:
         return problems
 
 
-def check(reviewer, pull_request, commit, config):
+def check(pull_request, commit, directory, config):
     problem_found = False
+
+    diff_content = pull_request.diff().decode('utf-8').split('\n')
+
     for changed_file in commit.files:
         if os.path.splitext(changed_file['filename'])[-1] == '.js':
             print ("  * %s" % changed_file['filename'])
 
-            response = requests.get(changed_file['raw_url'])
+            # Build a map of line numbers to diff positions
+            diff_position = diff.positions(diff_content, changed_file['filename'])
+
+            # If a directory has been provided, use that as the source of
+            # the files. Otherwise, download the file blob.
+            if directory is None:
+                response = requests.get(changed_file['raw_url'])
+                content = response.content
+            else:
+                with open(os.path.join(directory, changed_file['filename'])) as fp:
+                    content = fp.read().encode('utf-8')
 
             problems = Lint.find(
                 filename=changed_file['filename'],
-                content=response.content,
+                content=content,
                 config=config
             )
+
+            print(diff_position)
             for problem in problems:
-                print('    - %s' % problem)
-                problem.add_comment(reviewer, commit)
+                try:
+                    print(problem.line)
+                    position = diff_position[problem.line]
+                    print('    - %s' % problem)
+                    problem.add_comment(pull_request, commit, position)
+                except KeyError:
+                    # Line doesn't exist in the diff; so we can ignore this problem
+                    pass
 
     return problem_found
