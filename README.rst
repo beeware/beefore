@@ -1,8 +1,27 @@
-.. image:: http://pybee.org/project/projects/tools/beefore/beefore-72.png
-    :target: https://pybee.org/project/projects/tools/beefore
+.. image:: http://pybee.org/project/projects/bridges/batavia/beefore.png
+    :width: 72px
+    :target: https://pybee.org/beefore
 
 Beefore
 =======
+
+.. image:: https://img.shields.io/pypi/pyversions/beefore.svg
+    :target: https://pypi.python.org/pypi/beefore
+
+.. image:: https://img.shields.io/pypi/v/beefore.svg
+    :target: https://pypi.python.org/pypi/beefore
+
+.. image:: https://img.shields.io/pypi/status/beefore.svg
+    :target: https://pypi.python.org/pypi/beefore
+
+.. image:: https://img.shields.io/pypi/l/beefore.svg
+    :target: https://github.com/pybee/beefore/blob/master/LICENSE
+
+.. image:: https://travis-ci.org/pybee/beefore.svg?branch=master
+    :target: https://travis-ci.org/pybee/beefore
+
+.. image:: https://badges.gitter.im/pybee/general.svg
+    :target: https://gitter.im/pybee/general
 
 Performs pre-merge checks (such as code style) on a pull request.
 
