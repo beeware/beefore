@@ -1,4 +1,4 @@
-.. image:: http://pybee.org/project/projects/bridges/batavia/beefore.png
+.. image:: http://pybee.org/project/projects/tools/beefore/beefore.png
     :width: 72px
     :target: https://pybee.org/beefore
 
