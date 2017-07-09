@@ -12,13 +12,6 @@ from beefore import diff
 
 
 LABEL = 'ESLint'
-DESCRIPTION = {
-    'pending': 'Checking Javascript code style...',
-    'success': 'Code meets JavaScript style standards!',
-    'failure': 'Found some JavaScript code style problems.',
-    'error': 'Error while checking JavaScript code style.',
-}
-
 LINT_OUTPUT = re.compile('(.*?): line (\d+), col (\d+), (.*?) - (.*) \((.*)\)')
 
 
@@ -46,7 +39,7 @@ class Lint:
         )
 
     @staticmethod
-    def find(filename, content, config):
+    def find(filename, content):
         cmd_line = [
             'eslint',
             '--config', '.eslintrc.yml',
@@ -76,7 +69,7 @@ class Lint:
         return problems
 
 
-def check(pull_request, commit, directory, config):
+def check(pull_request, commit, directory):
     problem_found = False
 
     diff_content = pull_request.diff().decode('utf-8').split('\n')
@@ -100,7 +93,6 @@ def check(pull_request, commit, directory, config):
             problems = Lint.find(
                 filename=changed_file['filename'],
                 content=content,
-                config=config
             )
 
             print(diff_position)
@@ -114,4 +106,4 @@ def check(pull_request, commit, directory, config):
                     # Line doesn't exist in the diff; so we can ignore this problem
                     pass
 
-    return problem_found
+    return not problem_found

@@ -11,12 +11,6 @@ from beefore import diff
 
 
 LABEL = 'PyCodeStyle'
-DESCRIPTION = {
-    'pending': 'Checking Python code style...',
-    'success': 'Code meets Python style standards!',
-    'failure': 'Found some Python code style problems.',
-    'error': 'Error while checking Python code style.',
-}
 
 
 class Lint:
@@ -76,7 +70,7 @@ class Lint:
         return problems
 
 
-def check(pull_request, commit, directory, config):
+def check(pull_request, commit, directory):
     problem_found = False
 
     diff_content = pull_request.diff().decode('utf-8').split('\n')
@@ -100,7 +94,6 @@ def check(pull_request, commit, directory, config):
             problems = Lint.find(
                 filename=changed_file['filename'],
                 content=content,
-                config=config
             )
 
             for problem in problems:
@@ -112,4 +105,4 @@ def check(pull_request, commit, directory, config):
                     # Line doesn't exist in the diff; so we can ignore this problem
                     pass
 
-    return problem_found
+    return not problem_found

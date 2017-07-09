@@ -4,18 +4,12 @@
 ###########################################################################
 
 LABEL = 'DCO'
-DESCRIPTION = {
-    'pending': 'Checking for a DCO...',
-    'success': 'DCO found and verified!',
-    'failure': "Couldn't find a DCO.",
-    'error': 'Error while checking for DCO.',
-}
 
 
-def check(pull_request, commit, directory, config):
+def check(pull_request, commit, directory):
     expected_signoff = '\n\nSigned-off-by: %(name)s <%(email)s>' % commit.commit.committer
 
-    if expected_signoff in commit.message:
+    if commit.message and expected_signoff in commit.message:
         return True
 
     return False

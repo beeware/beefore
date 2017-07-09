@@ -1,190 +1,113 @@
-from __future__ import print_function
-
-from distutils.core import Command
+from argparse import ArgumentParser
+import importlib
 import os
 import sys
 
 from github3 import login
 from github3.exceptions import GitHubError
-import yaml
-
-from .check import CheckModule
-from .constants import *
-from .checks import *
 
 
-class beefore(Command):
-    description = "Perform pre-merge checks for a project"
+def run(options):
+    try:
+        github = login(options.username, password=options.password)
+        user = github.user(options.username)
+    except GitHubError as ghe:
+        print(
+            '\n'
+            'Unable to log into GitHub: %s' % ghe,
+            file=sys.stderr
+        )
+        sys.exit(10)
 
-    user_options = [
-        ('username=', 'u',
-         'The GitHub username to use when updating the project.'),
-        ('repository=', 'r',
-         'The name of the repository that contains the pull request.'),
-        ('commit-hash=', 'c',
-         'The hash of the commit to be checked.'),
-        ('pull-request=', 'p',
-         'The pull request containing the commit.'),
-        ('directory=', 'd',
-         'The directory holding the checked out repository.'),
-    ]
+    try:
+        print('Loading repository %s...' % options.repository)
+        owner, repo_name = options.repository.split('/')
+        repository = github.repository(owner, repo_name)
+    except GitHubError as ghe:
+        print(
+            '\n'
+            'Unable to load repository %s: %s' % (repository, ghe),
+            file=sys.stderr
+        )
+        sys.exit(11)
 
-    def initialize_options(self):
-        self.username = None
-        self.password = None
-        self.repository = None
-        self.commit_hash = None
-        self.pull_request = None
-        self.directory = None
+    try:
+        print('Loading pull request #%s...' % options.pull_request)
+        pull_request = repository.pull_request(options.pull_request)
+    except GitHubError as ghe:
+        print(
+            '\n'
+            'Unable to load pull request %s in %s: %s' % (options.pull_request, repository, ghe),
+            file=sys.stderr
+        )
+        sys.exit(12)
 
-    def finalize_options(self):
-        print("os.environ = ", os.environ)
-        if self.username is None:
-            print(
-                '\n'
-                'GitHub username not specified. You need to provide\n',
-                'a --username argument.',
-                file=sys.stderr
-            )
-            sys.exit(1)
+    try:
+        print('Loading commit %s...' % options.sha)
+        commit = repository.commit(options.sha)
+    except GitHubError as ghe:
+        print(
+            '\n'
+            'Unable to load commit %s: %s' % (options.sha, ghe),
+            file=sys.stderr
+        )
+        sys.exit(12)
 
-        if self.password is None:
-            try:
-                self.password = os.environ['BEEFORE_GITHUB_PASSWORD']
-            except KeyError:
-                print(
-                    '\n'
-                    'GitHub password not specified. You need to export BEEFORE_GITHUB_PASSWORD into your environment',
-                    file=sys.stderr
-                )
-                sys.exit(2)
+    print("Running %s check..." % options.check)
+    try:
+        check_module = importlib.import_module('beefore.checks.%s' % options.check)
+    except ImportError:
+        print(
+            '\n'
+            "Unable to load check module '%s'" % check,
+            file=sys.stderr
+        )
+        sys.exit(13)
 
-        if self.repository is None:
-            print(
-                '\n'
-                'GitHub repository not specified. You need to provide\n',
-                'a --repository argument.',
-                file=sys.stderr
-            )
-            sys.exit(4)
+    passed = check_module.check(pull_request, commit, os.path.abspath(options.directory))
+    if passed:
+        print("%s: Pre-commit checks passed." % options.check)
+        return 0
+    else:
+        print("%s: Found problems." % options.check)
+        return 1
 
-        # Read the configuration file
-        with open(os.path.join(os.path.dirname(os.path.abspath(sys.argv[1])), '.beefore.yml')) as config_file:
-            self.config = yaml.load(config_file)
 
-    def run(self):
-        try:
-            self.github = login(self.username, password=self.password)
-            self.user = self.github.user(self.username)
-        except GitHubError as ghe:
-            print(
-                '\n'
-                'Unable to log into GitHub: %s' % ghe,
-                file=sys.stderr
-            )
-            sys.exit(10)
+def main():
+    "Perform pre-merge checks for a project"
+    parser = ArgumentParser()
 
-        try:
-            print('Loading repository...')
-            owner, repo_name = self.repository.split('/')
-            repository = self.github.repository(owner, repo_name)
-        except GitHubError as ghe:
-            print(
-                '\n'
-                'Unable to load repository %s: %s' % (self.repository, ghe),
-                file=sys.stderr
-            )
-            sys.exit(11)
+    parser.add_argument('--username', '-u', dest='username', required=True,
+        help='The GitHub username to use when updating the project.'),
+    parser.add_argument('--repository', '-r', dest='repository', required=True,
+        help='The name of the repository that contains the pull request.'),
+    parser.add_argument('--commit=', '-c', dest='sha', required=True,
+        help='The hash of the commit to be checked.'),
+    parser.add_argument('--pull-request', '-p', dest='pull_request', required=True,
+        help='The pull request containing the commit.'),
+    parser.add_argument('check', metavar='check',
+        help='Premerge check to run.')
+    parser.add_argument('directory', metavar='directory',
+        help='Path to directory containing code to check.')
+    options = parser.parse_args()
 
-        try:
-            print('Loading pull request...')
-            pull_request = repository.pull_request(self.pull_request)
-        except GitHubError as ghe:
-            print(
-                '\n'
-                'Unable to load pull request %s in %s: %s' % (self.pull_request, self.repository, ghe),
-                file=sys.stderr
-            )
-            sys.exit(12)
+    # Load sensitive environment variables from a .env file
+    try:
+        with open('.env') as envfile:
+            for line in envfile:
+                if line.strip() and not line.startswith('#'):
+                    key, value = line.strip().split('=', 1)
+                    os.environ.setdefault(key.strip(), value.strip())
+    except FileNotFoundError:
+        pass
 
-        try:
-            print('Loading commit...')
-            commit = repository.commit(self.commit_hash)
-        except GitHubError as ghe:
-            print(
-                '\n'
-                'Unable to load commit %s: %s' % (self.pull_request, self.repository, ghe),
-                file=sys.stderr
-            )
-            sys.exit(12)
+    try:
+        options.password = os.environ['GITHUB_ACCESS_TOKEN']
+    except KeyError as e:
+        print("GITHUB_ACCESS_TOKEN not found")
+        sys.exit(1)
 
-        print("Run pre-merge checks...")
-        self.check_modules = {}
-        for check, config in self.config['checks'].items():
-            try:
-                check_module = CheckModule(check, config=self.config['checks'])
-                self.check_modules[check] = check_module
-            except ValueError:
-                print(
-                    '\n'
-                    "Unable to load check module '%s'" % check,
-                    file=sys.stderr
-                )
-                sys.exit(13)
+    return run(options)
 
-            self.report_status(
-                commit=commit,
-                context='Beefore/%s' % check_module.label,
-                state=PENDING,
-                target_url=check_module.target_url,
-                description=check_module.description(PENDING)
-            )
-
-        problem_checks = []
-        for check in self.config['checks']:
-            check_module = self.check_modules[check]
-            print("Performing %s check..." % check_module.label)
-            try:
-                passed = check_module.check(pull_request, commit, self.directory)
-
-                if passed:
-                    state = SUCCESS
-                else:
-                    state = FAILURE
-                    problem_checks.append(check)
-
-                self.report_status(
-                    commit=commit,
-                    context='Beefore/%s' % check_module.label,
-                    state=state,
-                    target_url=check_module.target_url,
-                    description=check_module.description(state)
-                )
-            except Exception as e:
-                print(e, e.errors, file=sys.stderr)
-                problem_checks.append(check)
-                self.report_status(
-                    commit=commit,
-                    context='Beefore/%s' % check_module.label,
-                    state=ERROR,
-                    target_url=check_module.target_url,
-                    description=check_module.description(ERROR)
-                )
-
-        if problem_checks:
-            print("Found a problem with the following checks: %s" % ', '.join(problem_checks))
-        else:
-            print("Success! All pre-commit checks passed!")
-
-    def report_status(self, commit, context, state, target_url, description):
-        print('...', description)
-        url = commit._api.replace('commits', 'statuses')
-        payload = {
-            'context': context,
-            'state': state,
-            'target_url': target_url,
-            'description': description,
-        }
-        response = commit._post(url, payload)
-        if not response.ok:
-            raise GitHubError(response.reason)
+if __name__ == '__main__':
+    main()

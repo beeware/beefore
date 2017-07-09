@@ -27,8 +27,8 @@ setup(
     keywords=['lint', 'merge', 'dco'],
     packages=find_packages(exclude=['tests']),
     entry_points={
-        'distutils.commands': [
-            'beefore = beefore.command:beefore',
+        'console_scripts': [
+            'beefore = beefore.command:main',
         ]
     },
     install_requires=[
