@@ -2,11 +2,14 @@
 # Check if any of the Javascript files touched by the commit have
 # code style problems.
 ###########################################################################
+import json
 import os.path
 import re
 import requests
 import sys
 import subprocess
+
+import yaml
 
 from beefore import diff
 
@@ -28,7 +31,7 @@ class Lint:
 
     def add_comment(self, pull_request, commit, position):
         pull_request.create_review_comment(
-            body="At column %(col)d: [(%(code)s) %(description)s](http://.../%(code)s)" % {
+            body="At column %(col)d: [(%(code)s) %(description)s](http://eslint.org/docs/rules/%(code)s)" % {
                 'col': self.col,
                 'code': self.code,
                 'description': self.description
@@ -39,17 +42,14 @@ class Lint:
         )
 
     @staticmethod
-    def find(filename, content):
-        cmd_line = [
-            'eslint',
-            '--config', '.eslintrc.yml',
-            '--format', 'compact',
-            '--stdin',
-            '--stdin-filename', filename,
-        ]
+    def find(directory, filename, content):
         proc = subprocess.Popen(
-            cmd_line,
-            cwd=os.path.dirname(os.path.abspath(sys.argv[1])),
+            [
+                '../node_modules/.bin/eslint',
+                '--format', 'compact',
+                filename,
+            ],
+            cwd=directory,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE
         )
@@ -67,6 +67,50 @@ class Lint:
             ))
 
         return problems
+
+SIMPLE_COMMENT = re.compile('//.*')
+MULTILINE_COMMENT = re.compile('/\*.*?\*/', re.DOTALL)
+SYMBOL_TO_STRING = re.compile('([a-zA-Z_][-\w_]*)\s*:')
+
+def clean_json(raw):
+    # Replace  //-style comments
+    clean = SIMPLE_COMMENT.sub('', raw)
+
+    # Replace  /* */-style comments
+    clean = MULTILINE_COMMENT.sub('', clean)
+
+    # Replace unadorned foo: 42 with "foo": 42
+    clean = SYMBOL_TO_STRING.sub('"\\1":', clean)
+    return clean
+
+
+def install_eslint_config(directory):
+    if os.path.isfile(os.path.join(directory, '.eslintrc')):
+        with open(os.path.join(directory, '.eslintrc')) as config_file:
+            config = json.loads(clean_json(config_file.read()))
+    elif os.path.isfile(os.path.join(directory, '.eslintrc.json')):
+        with open(os.path.join(directory, '.eslintrc.json')) as config_file:
+            config = json.loads(clean_json(config_file.read()))
+    elif os.path.isfile(os.path.join(directory, '.eslintrc.yml')):
+        with open(os.path.join(directory, '.eslintrc.yml')) as config_file:
+            config = yaml.load(config_file.read())
+    else:
+        config_file = None
+
+    if config_file is None:
+        print("No ESLint configuration file found.")
+    else:
+        try:
+            extends_name = config['extends']
+            print("Installing base ESLint configuration 'eslint-config-%s'..." % extends_name)
+            proc = subprocess.Popen(['npm', 'install', 'eslint-config-%s' % extends_name])
+            proc.wait()
+        except KeyError as e:
+            print("No base ESLint configuration specified.")
+
+
+def prepare(directory):
+    install_eslint_config(directory)
 
 
 def check(pull_request, commit, directory):
@@ -91,14 +135,14 @@ def check(pull_request, commit, directory):
                     content = fp.read().encode('utf-8')
 
             problems = Lint.find(
+                directory=directory,
                 filename=changed_file['filename'],
                 content=content,
             )
 
-            print(diff_position)
             for problem in problems:
                 try:
-                    print(problem.line)
+                    problem_found = True
                     position = diff_position[problem.line]
                     print('    - %s' % problem)
                     problem.add_comment(pull_request, commit, position)

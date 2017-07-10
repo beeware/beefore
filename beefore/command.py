@@ -64,12 +64,15 @@ def run(options):
         )
         sys.exit(13)
 
+    check_module.prepare(os.path.abspath(options.directory))
+
+    print('==========' * 8)
     passed = check_module.check(pull_request, commit, os.path.abspath(options.directory))
     if passed:
         print("%s: Pre-commit checks passed." % options.check)
         return 0
     else:
-        print("%s: Found problems." % options.check)
+        print("%s: Pre-commit checks did NOT pass." % options.check)
         return 1
 
 

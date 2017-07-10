@@ -11,7 +11,6 @@ def positions(diff, filename):
     for i, d in enumerate(diff):
         match = FILE_START.match(d)
         if match:
-            print(match.group(1), filename)
             if match.group(1) == filename:
                 current_file = {}
             else:

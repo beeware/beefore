@@ -26,7 +26,8 @@ class Lint:
 
     def add_comment(self, pull_request, commit, position):
         pull_request.create_review_comment(
-            body="At column %(col)d: [(%(code)s) %(description)s](http://.../%(code)s)" % {
+            # body="At column %(col)d: [(%(code)s) %(description)s](http://.../%(code)s)" % {
+            body="At column %(col)d: (%(code)s) %(description)s" % {
                 'col': self.col,
                 'code': self.code,
                 'description': self.description
@@ -37,23 +38,16 @@ class Lint:
         )
 
     @staticmethod
-    def find(filename, content, config):
-        cmd_line = [
-            sys.executable, '-m', 'flake8',
-            '--config', '.flake8.ini',
-            '--stdin-display-name', filename,
-            '-'
-        ]
-
+    def find(directory, filename, content):
         proc = subprocess.Popen(
-            cmd_line,
-            cwd=os.path.dirname(os.path.abspath(sys.argv[1])),
+            ['flake8', filename],
+            cwd=directory,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE
         )
         out, err = proc.communicate(content)
 
-        out_lines = out.decode('utf-8').strip().split('\n')
+        out_lines = [line for line in out.decode('utf-8').strip().split('\n') if line]
 
         problems = []
         for problem in out_lines:
@@ -68,6 +62,10 @@ class Lint:
             ))
 
         return problems
+
+
+def prepare(directory):
+    pass
 
 
 def check(pull_request, commit, directory):
@@ -92,12 +90,14 @@ def check(pull_request, commit, directory):
                     content = fp.read().encode('utf-8')
 
             problems = Lint.find(
+                directory=directory,
                 filename=changed_file['filename'],
                 content=content,
             )
 
             for problem in problems:
                 try:
+                    problem_found = True
                     position = diff_position[problem.line]
                     print('    - %s' % problem)
                     problem.add_comment(pull_request, commit, position)
