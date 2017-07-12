@@ -142,12 +142,12 @@ def check(pull_request, commit, directory):
 
             for problem in problems:
                 try:
-                    problem_found = True
                     position = diff_position[problem.line]
+                    problem_found = True
                     print('    - %s' % problem)
                     problem.add_comment(pull_request, commit, position)
                 except KeyError:
                     # Line doesn't exist in the diff; so we can ignore this problem
-                    pass
+                    print('     - [IGNORED] %s' % problem)
 
     return not problem_found

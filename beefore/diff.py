@@ -5,6 +5,11 @@ LINE_RANGE = re.compile("@@ -(\d+),(\d+) \+(\d+),(\d+) @@")
 
 
 def positions(diff, filename):
+    """Given a diff payload, look for all the line ranges described for a given file.
+
+    Returns a map of source file lines, mapped to the position in the diff
+    that the line is referenced.
+    """
     current_file = None
     start = None
     offset = None
