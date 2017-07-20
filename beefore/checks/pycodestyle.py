@@ -3,7 +3,6 @@
 # code style problems.
 ###########################################################################
 import os.path
-import requests
 import sys
 import subprocess
 
@@ -38,22 +37,23 @@ class Lint:
         )
 
     @staticmethod
-    def find(directory, filename, content):
+    def find(directory):
         proc = subprocess.Popen(
-            ['flake8', filename],
+            ['flake8'],
             cwd=directory,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE
         )
-        out, err = proc.communicate(content)
+        out, err = proc.communicate()
 
         out_lines = [line for line in out.decode('utf-8').strip().split('\n') if line]
 
-        problems = []
+        problems = {}
         for problem in out_lines:
             fname, line, col, remainder = problem.split(':', 4)
+            filename = os.path.abspath(fname)
             code, description = remainder.strip().split(' ', 1)
-            problems.append(Lint(
+            problems.setdefault(filename, []).append(Lint(
                 filename=filename,
                 line=int(line),
                 col=int(col),
@@ -71,31 +71,18 @@ def prepare(directory):
 def check(pull_request, commit, directory):
     problem_found = False
 
-    diff_content = pull_request.diff().decode('utf-8').split('\n')
+    problems = Lint.find(directory=directory)
 
+    diff_content = pull_request.diff().decode('utf-8').split('\n')
     for changed_file in commit.files:
         if os.path.splitext(changed_file['filename'])[-1] == '.py':
-            print ("  * %s" % changed_file['filename'])
+            filename = os.path.join(directory, changed_file['filename'])
+            print("  * %s" % changed_file['filename'])
 
             # Build a map of line numbers to diff positions
             diff_position = diff.positions(diff_content, changed_file['filename'])
 
-            # If a directory has been provided, use that as the source of
-            # the files. Otherwise, download the file blob.
-            if directory is None:
-                response = requests.get(changed_file['raw_url'])
-                content = response.content
-            else:
-                with open(os.path.join(directory, changed_file['filename'])) as fp:
-                    content = fp.read().encode('utf-8')
-
-            problems = Lint.find(
-                directory=directory,
-                filename=changed_file['filename'],
-                content=content,
-            )
-
-            for problem in problems:
+            for problem in sorted(problems[filename], key=lambda p: p.line):
                 try:
                     position = diff_position[problem.line]
                     problem_found = True
