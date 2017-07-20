@@ -26,14 +26,12 @@ def positions(diff, filename):
             if match:
                 # Found the start of a new range in the file
                 first_line = int(match.group(3))
-                start = i
+                start = i + 1
                 offset = 1 if match.group(1) == '0' else 0
             elif start and len(d) > 0:
                 if d[0] == '-':
                     offset += 1
                 else:
-                    line = first_line + i - start - offset
-                    position = i - start
-                    current_file[line] = position
+                    current_file[i - start - offset + first_line] = i + 1
 
     return current_file
