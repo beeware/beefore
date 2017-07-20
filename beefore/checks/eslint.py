@@ -5,7 +5,6 @@
 import json
 import os.path
 import re
-import requests
 import sys
 import subprocess
 
@@ -42,7 +41,7 @@ class Lint:
         )
 
     @staticmethod
-    def find(directory, filename, content):
+    def find(directory, filename):
         proc = subprocess.Popen(
             [
                 '../node_modules/.bin/eslint',
@@ -53,7 +52,7 @@ class Lint:
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE
         )
-        out, err = proc.communicate(content)
+        out, err = proc.communicate()
 
         matches = LINT_OUTPUT.findall(out.decode('utf-8'))
         problems = []
@@ -125,19 +124,9 @@ def check(pull_request, commit, directory):
             # Build a map of line numbers to diff positions
             diff_position = diff.positions(diff_content, changed_file['filename'])
 
-            # If a directory has been provided, use that as the source of
-            # the files. Otherwise, download the file blob.
-            if directory is None:
-                response = requests.get(changed_file['raw_url'])
-                content = response.content
-            else:
-                with open(os.path.join(directory, changed_file['filename'])) as fp:
-                    content = fp.read().encode('utf-8')
-
             problems = Lint.find(
                 directory=directory,
                 filename=changed_file['filename'],
-                content=content,
             )
 
             for problem in problems:
