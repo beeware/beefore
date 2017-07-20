@@ -50,7 +50,7 @@ class Lint:
 
         problems = {}
         for problem in out_lines:
-            fname, line, col, remainder = problem.split(':', 4)
+            fname, line, col, remainder = problem.split(':', 3)
             filename = os.path.abspath(fname)
             code, description = remainder.strip().split(' ', 1)
             problems.setdefault(filename, []).append(Lint(
