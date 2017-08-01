@@ -77,7 +77,7 @@ def check(pull_request, commit, directory):
             # Build a map of line numbers to diff positions
             diff_position = diff.positions(diff_content, changed_file['filename'])
 
-            for problem in sorted(problems[filename], key=lambda p: p.line):
+            for problem in sorted(problems.get(filename, []), key=lambda p: p.line):
                 try:
                     position = diff_position[problem.line]
                     problem_found = True
