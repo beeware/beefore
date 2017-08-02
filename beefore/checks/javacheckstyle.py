@@ -4,7 +4,6 @@
 ###########################################################################
 import os.path
 import re
-import sys
 import subprocess
 
 from beefore import diff
@@ -12,6 +11,7 @@ from beefore import diff
 
 LABEL = 'Java CheckStyle'
 LINT_OUTPUT = re.compile("\[checkstyle\] \[(ERROR)\] (.*?):(\d+): (.*) \[(.*)\]")
+
 
 class Lint:
     def __init__(self, filename, line, code, description):

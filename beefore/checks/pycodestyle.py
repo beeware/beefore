@@ -3,7 +3,6 @@
 # code style problems.
 ###########################################################################
 import os.path
-import sys
 import subprocess
 
 from beefore import diff

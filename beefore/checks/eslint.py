@@ -5,7 +5,6 @@
 import json
 import os.path
 import re
-import sys
 import subprocess
 
 import yaml
@@ -67,9 +66,11 @@ class Lint:
 
         return problems
 
+
 SIMPLE_COMMENT = re.compile('//.*')
 MULTILINE_COMMENT = re.compile('/\*.*?\*/', re.DOTALL)
 SYMBOL_TO_STRING = re.compile('([a-zA-Z_][-\w_]*)\s*:')
+
 
 def clean_json(raw):
     # Replace  //-style comments
@@ -119,7 +120,7 @@ def check(pull_request, commit, directory):
 
     for changed_file in commit.files:
         if os.path.splitext(changed_file['filename'])[-1] == '.js':
-            print ("  * %s" % changed_file['filename'])
+            print("  * %s" % changed_file['filename'])
 
             # Build a map of line numbers to diff positions
             diff_position = diff.positions(diff_content, changed_file['filename'])

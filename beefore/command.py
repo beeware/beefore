@@ -10,7 +10,6 @@ from github3.exceptions import GitHubError
 def run(options):
     try:
         github = login(options.username, password=options.password)
-        user = github.user(options.username)
     except GitHubError as ghe:
         print(
             '\n'
@@ -59,7 +58,7 @@ def run(options):
     except ImportError:
         print(
             '\n'
-            "Unable to load check module '%s'" % check,
+            "Unable to load check module '%s'" % options.check,
             file=sys.stderr
         )
         sys.exit(13)
@@ -80,17 +79,23 @@ def main():
     "Perform pre-merge checks for a project"
     parser = ArgumentParser()
 
-    parser.add_argument('--username', '-u', dest='username', required=True,
+    parser.add_argument(
+        '--username', '-u', dest='username', required=True,
         help='The GitHub username to use when updating the project.'),
-    parser.add_argument('--repository', '-r', dest='repository', required=True,
+    parser.add_argument(
+        '--repository', '-r', dest='repository', required=True,
         help='The name of the repository that contains the pull request.'),
-    parser.add_argument('--commit=', '-c', dest='sha', required=True,
+    parser.add_argument(
+        '--commit=', '-c', dest='sha', required=True,
         help='The hash of the commit to be checked.'),
-    parser.add_argument('--pull-request', '-p', dest='pull_request', required=True,
+    parser.add_argument(
+        '--pull-request', '-p', dest='pull_request', required=True,
         help='The pull request containing the commit.'),
-    parser.add_argument('check', metavar='check',
+    parser.add_argument(
+        'check', metavar='check',
         help='Premerge check to run.')
-    parser.add_argument('directory', metavar='directory',
+    parser.add_argument(
+        'directory', metavar='directory',
         help='Path to directory containing code to check.')
     options = parser.parse_args()
 
@@ -111,6 +116,7 @@ def main():
         sys.exit(1)
 
     return run(options)
+
 
 if __name__ == '__main__':
     main()
