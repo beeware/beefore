@@ -17,8 +17,8 @@ Beefore
 .. image:: https://img.shields.io/pypi/l/beefore.svg
     :target: https://github.com/pybee/beefore/blob/master/LICENSE
 
-.. image:: https://travis-ci.org/pybee/beefore.svg?branch=master
-    :target: https://travis-ci.org/pybee/beefore
+.. image:: https://beekeeper.herokuapp.com/projects/pybee/beefore/shield
+    :target: https://beekeeper.herokuapp.com/projects/pybee/beefore
 
 .. image:: https://badges.gitter.im/pybee/general.svg
     :target: https://gitter.im/pybee/general
