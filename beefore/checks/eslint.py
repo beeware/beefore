@@ -125,19 +125,23 @@ def check(pull_request, commit, directory):
             # Build a map of line numbers to diff positions
             diff_position = diff.positions(diff_content, changed_file['filename'])
 
-            problems = Lint.find(
-                directory=directory,
-                filename=changed_file['filename'],
-            )
+            if diff_position:
+                problems = Lint.find(
+                    directory=directory,
+                    filename=changed_file['filename'],
+                )
 
-            for problem in problems:
-                try:
-                    position = diff_position[problem.line]
-                    problem_found = True
-                    print('    - %s' % problem)
-                    problem.add_comment(pull_request, commit, position)
-                except KeyError:
-                    # Line doesn't exist in the diff; so we can ignore this problem
-                    print('     - [IGNORED] %s' % problem)
+                for problem in problems:
+                    try:
+                        position = diff_position[problem.line]
+                        problem_found = True
+                        print('    - %s' % problem)
+                        problem.add_comment(pull_request, commit, position)
+                    except KeyError:
+                        # Line doesn't exist in the diff; so we can ignore this problem
+                        print('     - [IGNORED] %s' % problem)
+            else:
+                # File has been changed, but wasn't in the diff
+                print('     - [MERGED] %s' % problem)
 
     return not problem_found
