@@ -89,6 +89,6 @@ def check(pull_request, commit, directory):
                         print('     - [IGNORED] %s' % problem)
             else:
                 # File has been changed, but wasn't in the diff
-                print('     - [MERGED] %s' % problem)
+                print('     - [IGNORED]')
 
     return not problem_found
