@@ -6,7 +6,7 @@ Beefore
 
 Beefore is a set of tooling that automatically performs checks on pull requests
 (PRs) before they are merged in and reports back any issues. This is done to keep
-style consistancy across all projects and no matter who is comitting the code.
+style consistency across all projects and no matter who is committing the code.
 If further information for each of the check that are made is needed, follow the
 links referenced in each of the check sections below.
 
@@ -54,7 +54,7 @@ Each of the projects under Beeware has a beekeeper.yml file that defines checks 
 required. The Beefore tests are part of pull_request and gets kicked off when any pull request is
 raised against the project. The request code is checked for the lines that have changed and these
 are then run against the style checkers. Should any issues be found the PR will be updated with
-the lines that have failed and the reason why. These should be fixed before the the PR is resubmitted.
+the lines that have failed and the reason why. These should be fixed before the PR is resubmitted.
 
 Running locally
 ---------------
