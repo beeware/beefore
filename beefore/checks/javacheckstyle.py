@@ -10,7 +10,7 @@ from beefore import diff
 
 
 LABEL = 'Java CheckStyle'
-LINT_OUTPUT = re.compile("\[checkstyle\] \[(ERROR)\] (.*?):(\d+): (.*) \[(.*)\]")
+LINT_OUTPUT = re.compile("\[checkstyle\] \[(ERROR)\] (.*?):(\d+):(?:\d+:)? (.*) \[(.*)\]")
 
 
 class Lint:
