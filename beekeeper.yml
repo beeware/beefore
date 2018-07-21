@@ -4,9 +4,9 @@ pull_request:
         subtasks:
             - pycodestyle:
                 name: Python lint checks
-                task: beefore
+                task: beeware/beefore
     - smoke-test:
-        task: py34
+        task: beeware/py34
         name: Smoke build (Python 3.4)
     # - full-test:
     #     subtasks:
@@ -18,5 +18,5 @@ pull_request:
     #             task: py36
 push:
     - smoke-test:
-        task: py34
+        task: beeware/py34
         name: Smoke build (Python 3.4)

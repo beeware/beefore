@@ -32,6 +32,7 @@ setup(
         ]
     },
     install_requires=[
+        'gitpython',
         'github3.py',
         'PyYAML',
         'flake8>=3.0.0b2',

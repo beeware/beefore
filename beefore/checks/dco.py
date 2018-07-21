@@ -5,17 +5,31 @@
 
 LABEL = 'DCO'
 
+class DCOProblem:
+    def __str__(self):
+        return 'No DCO found'
+
+    def add_comment(self, pull_request, commit, position):
+        pull_request.create_comment(
+            body="You haven't signed this pull request with a Developer "
+                 "Certificate of Origin (DCO). For details on what a DCO "
+                 "is, and what it means for your contribution, visit "
+                 "[this link](https://pybee.org/contributing/how/dco/).",
+        )
+
 
 def prepare(directory):
     pass
 
 
-def check(pull_request, commit, directory):
-    expected_signoff = '\n\nSigned-off-by: %(name)s <%(email)s>' % commit.commit.committer
+def check(directory, diff_content, commit):
+    expected_signoff = '\nSigned-off-by: '
 
-    if commit.message and expected_signoff in commit.message:
+    if expected_signoff in commit['message']:
         print("DCO found.")
-        return True
+        return []
 
     print("No DCO found.")
-    return False
+    return [
+        (DCOProblem(), None)
+    ]

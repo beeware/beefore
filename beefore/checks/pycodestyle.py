@@ -37,6 +37,7 @@ class Lint:
 
     @staticmethod
     def find(directory):
+        directory = os.path.abspath(directory)
         proc = subprocess.Popen(
             ['flake8'],
             cwd=directory,
@@ -50,7 +51,7 @@ class Lint:
         problems = {}
         for problem in out_lines:
             fname, line, col, remainder = problem.split(':', 3)
-            filename = os.path.abspath(fname)
+            filename = os.path.abspath(fname)[len(directory)+1:]
             code, description = remainder.strip().split(' ', 1)
             problems.setdefault(filename, []).append(Lint(
                 filename=filename,
@@ -67,32 +68,25 @@ def prepare(directory):
     pass
 
 
-def check(pull_request, commit, directory):
-    problem_found = False
+def check(directory, diff_content, commit):
+    results = []
 
-    problems = Lint.find(directory=directory)
+    lint_results = Lint.find(directory=directory)
+    diff_mappings = diff.positions(directory, diff_content)
 
-    diff_content = pull_request.diff().decode('utf-8').split('\n')
-    for changed_file in commit.files:
-        if os.path.splitext(changed_file['filename'])[-1] == '.py':
-            filename = os.path.join(directory, changed_file['filename'])
-            print("  * %s" % changed_file['filename'])
+    for filename, problems in lint_results.items():
+        print("  * %s" % filename)
+        if filename in diff_mappings:
+            for problem in sorted(problems, key=lambda p: p.line):
+                try:
+                    position = diff_mappings[filename][problem.line]
+                    print('    - %s' % problem)
+                    results.append((problem, position))
+                except KeyError:
+                    # Line doesn't exist in the diff; so we can ignore this problem
+                    print('    - Line %s not in diff' % problem.line)
+        else:
+            # File has been changed, but wasn't in the diff
+            print('    - file not in diff')
 
-            # Build a map of line numbers to diff positions
-            diff_position = diff.positions(diff_content, changed_file['filename'])
-
-            if diff_position:
-                for problem in sorted(problems.get(filename, []), key=lambda p: p.line):
-                    try:
-                        position = diff_position[problem.line]
-                        problem_found = True
-                        print('    - %s' % problem)
-                        problem.add_comment(pull_request, commit, position)
-                    except KeyError:
-                        # Line doesn't exist in the diff; so we can ignore this problem
-                        print('     - [IGNORED] %s' % problem)
-            else:
-                # File has been changed, but wasn't in the diff
-                print('     - [IGNORED]')
-
-    return not problem_found
+    return results

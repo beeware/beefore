@@ -40,12 +40,14 @@ class Lint:
         )
 
     @staticmethod
-    def find(directory, filename):
+    def find(directory):
+        directory = os.path.abspath(directory)
         proc = subprocess.Popen(
             [
-                '../node_modules/.bin/eslint',
+                'npx',
+                'eslint',
                 '--format', 'compact',
-                filename,
+                '.',
             ],
             cwd=directory,
             stdin=subprocess.PIPE,
@@ -54,9 +56,10 @@ class Lint:
         out, err = proc.communicate()
 
         matches = LINT_OUTPUT.findall(out.decode('utf-8'))
-        problems = []
-        for full_name, line, col, level, description, code in matches:
-            problems.append(Lint(
+        problems = {}
+        for fname, line, col, level, description, code in matches:
+            filename = os.path.abspath(fname)[len(directory)+1:]
+            problems.setdefault(filename, []).append(Lint(
                 filename=filename,
                 line=int(line),
                 col=int(col),
@@ -113,35 +116,25 @@ def prepare(directory):
     install_eslint_config(directory)
 
 
-def check(pull_request, commit, directory):
-    problem_found = False
+def check(directory, diff_content, commit):
+    results = []
 
-    diff_content = pull_request.diff().decode('utf-8').split('\n')
+    lint_results = Lint.find(directory=directory)
+    diff_mappings = diff.positions(directory, diff_content)
 
-    for changed_file in commit.files:
-        if os.path.splitext(changed_file['filename'])[-1] == '.js':
-            print("  * %s" % changed_file['filename'])
+    for filename, problems in lint_results.items():
+        print("  * %s" % filename)
+        if filename in diff_mappings:
+            for problem in sorted(problems, key=lambda p: p.line):
+                try:
+                    position = diff_mappings[filename][problem.line]
+                    print('    - %s' % problem)
+                    results.append((problem, position))
+                except KeyError:
+                    # Line doesn't exist in the diff; so we can ignore this problem
+                    print('    - Line %s not in diff' % problem.line)
+        else:
+            # File has been changed, but wasn't in the diff
+            print('    - file not in diff')
 
-            # Build a map of line numbers to diff positions
-            diff_position = diff.positions(diff_content, changed_file['filename'])
-
-            if diff_position:
-                problems = Lint.find(
-                    directory=directory,
-                    filename=changed_file['filename'],
-                )
-
-                for problem in problems:
-                    try:
-                        position = diff_position[problem.line]
-                        problem_found = True
-                        print('    - %s' % problem)
-                        problem.add_comment(pull_request, commit, position)
-                    except KeyError:
-                        # Line doesn't exist in the diff; so we can ignore this problem
-                        print('     - [IGNORED] %s' % problem)
-            else:
-                # File has been changed, but wasn't in the diff
-                print('     - [IGNORED]')
-
-    return not problem_found
+    return results
