@@ -1,4 +1,5 @@
 from argparse import ArgumentParser
+import importlib
 import os
 import sys
 
@@ -46,6 +47,22 @@ def main():
 
     options = parser.parse_args()
 
+    # Load the check module
+    try:
+        if '.' in options.check:
+            module_name = options.check
+        else:
+            module_name = 'beefore.checks.{}'.format(options.check)
+
+        check_module = importlib.import_module(module_name)
+    except ImportError:
+        print(
+            '\n'
+            "Unable to load check module '%s'" % options.check,
+            file=sys.stderr
+        )
+        sys.exit(20)
+
     # Load sensitive environment variables from a .env file
     try:
         with open('.env') as envfile:
@@ -61,7 +78,7 @@ def main():
         # is a check running on a local code checkout.
         repository = git.Repo(options.directory)
         passed = local.check(
-            check=options.check,
+            check_module=check_module,
             directory=options.directory,
             repository=repository,
             branch=options.branch,
@@ -88,7 +105,7 @@ def main():
             sys.exit(1)
 
         passed = github.check(
-            check=options.check,
+            check_module=check_module,
             directory=options.directory,
             username=options.username,
             password=options.password,

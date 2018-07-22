@@ -1,6 +1,3 @@
-import importlib
-import sys
-
 
 def unified_format(diff):
     udiff = diff.diff.decode('utf-8').splitlines()
@@ -47,18 +44,8 @@ def full_diff(repository, branch='master'):
     return content
 
 
-def check(check, directory, repository, branch):
-    try:
-        check_module = importlib.import_module('beefore.checks.%s' % check)
-    except ImportError:
-        print(
-            '\n'
-            "Unable to load check module '%s'" % check,
-            file=sys.stderr
-        )
-        sys.exit(20)
-
-    print("Running %s check..." % check)
+def check(check_module, directory, repository, branch):
+    print("Running %s check..." % check_module.__name__)
     print('==========' * 8)
     problems = check_module.check(
         directory=directory,

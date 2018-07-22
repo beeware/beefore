@@ -1,11 +1,10 @@
-import importlib
 import sys
 
 import github3
 from github3.exceptions import GitHubError
 
 
-def check(check, directory, username, password, repo_path, pull_request, sha):
+def check(check_module, directory, username, password, repo_path, pull_request, sha):
     try:
         github = github3.login(username, password=password)
     except GitHubError as ghe:
@@ -50,19 +49,9 @@ def check(check, directory, username, password, repo_path, pull_request, sha):
         )
         sys.exit(13)
 
-    try:
-        check_module = importlib.import_module('beefore.checks.%s' % check)
-    except ImportError:
-        print(
-            '\n'
-            "Unable to load check module '%s'" % check,
-            file=sys.stderr
-        )
-        sys.exit(20)
-
     diff_content = pull_request.diff().decode('utf-8').split('\n')
 
-    print("Running Github %s check..." % check)
+    print("Running Github %s check..." % check_module.__name__)
     print('==========' * 8)
     problems = check_module.check(
         directory=directory,

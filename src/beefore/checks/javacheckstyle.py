@@ -2,14 +2,13 @@
 # Check if any of the Python files touched by the commit have
 # code style problems.
 ###########################################################################
-import os.path
 import re
 import subprocess
 
 from beefore import diff
 
 
-LABEL = 'Java CheckStyle'
+__name__ = 'Java CheckStyle'
 LINT_OUTPUT = re.compile("\[checkstyle\] \[(ERROR)\] (.*?):(\d+):(?:\d+:)? (.*) \[(.*)\]")
 
 

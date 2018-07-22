@@ -8,7 +8,7 @@ import subprocess
 from beefore import diff
 
 
-LABEL = 'PyCodeStyle'
+__name__ = 'PyCodeStyle'
 
 
 class Lint:

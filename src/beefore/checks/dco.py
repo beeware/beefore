@@ -3,7 +3,8 @@
 # in the commit.
 ###########################################################################
 
-LABEL = 'DCO'
+__name__ = 'DCO'
+
 
 class DCOProblem:
     def __str__(self):
