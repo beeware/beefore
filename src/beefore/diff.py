@@ -21,9 +21,8 @@ def positions(directory, diff_content):
         if match:
             current_file = {}
 
-            filename = os.path.abspath(os.path.join(directory, match.group(1)))[len(directory)+1:]
+            filename = os.path.abspath(match.group(2))[len(directory)+1:]
             mappings[filename] = current_file
-            # print("NEW FILE", filename)
         elif current_file is not None:
             match = LINE_RANGE.match(d)
             if match:
@@ -31,13 +30,9 @@ def positions(directory, diff_content):
                 first_line = int(match.group(3))
                 start = i + 1
                 offset = 1 if match.group(1) == '0' else 0
-                # print("LINE RANGE", first_line, start, offset)
             elif start and len(d) > 0:
                 if d[0] == '-':
                     offset += 1
                 else:
-                    # print('>>', i, start, offset, first_line, i - start - offset + first_line, '->', i+1)
                     current_file[i - start - offset + first_line] = i + 1
-        # else:
-        #     print("NO CURRENT FILE")
     return mappings
