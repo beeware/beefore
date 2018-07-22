@@ -4,22 +4,22 @@ pull_request:
         subtasks:
             - pycodestyle:
                 name: Python lint checks
-                image: beeware/beefore
+                image: pybee/beefore
     - smoke-test:
-        image: beeware/py36
+        image: pybee/py36
         name: Smoke build (Python 3.6)
     - full-test:
         subtasks:
             - py3.4:
                 name: Python 3.4 tests
-                image: beeware/py34
+                image: pybee/py34
             - py3.5:
                 name: Python 3.5 tests
-                image: beeware/py35
+                image: pybee/py35
             - py3.7:
                 name: Python 3.7 tests
-                image: beeware/py37
+                image: pybee/py37
 push:
     - smoke-test:
-        image: beeware/py36
+        image: pybee/py36
         name: Smoke build (Python 3.6)
