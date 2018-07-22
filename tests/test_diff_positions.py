@@ -37,7 +37,7 @@ class TestDiff(unittest.TestCase):
         self.assertEqual(
             diff.positions('tests', diff_content),
             {
-                "/path/to/testfile": {1: 3, 2: 6}
+                "path/to/testfile": {1: 3, 2: 6}
             }
         )
 
@@ -61,7 +61,7 @@ class TestDiff(unittest.TestCase):
         self.assertEqual(
             diff.positions('tests', diff_content),
             {
-                "/path/to/testfile": {2: 4, 3: 5, 4: 7, 5: 10, 6: 11, 7: 13}
+                "path/to/testfile": {2: 4, 3: 5, 4: 7, 5: 10, 6: 11, 7: 13}
             }
         )
 
@@ -75,5 +75,5 @@ class TestDiff(unittest.TestCase):
 
         self.assertEqual(
             diff.positions('tests', diff_content),
-            None
+            {}
         )
