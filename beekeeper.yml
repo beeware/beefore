@@ -1,3 +1,10 @@
+pre_commit:
+    - beefore:
+        name: Precommit checks
+        subtasks:
+            - pycodestyle:
+                name: Python lint checks
+                image: pybee/beefore
 pull_request:
     - beefore:
         name: Prebuild checks
