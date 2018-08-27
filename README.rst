@@ -51,6 +51,10 @@ Contributing
 If you experience problems with Beefore, `log them on GitHub`_. If you
 want to contribute code, please `fork the code`_ and `submit a pull request`_.
 
+``beefore`` uses ``beekeeper`` to run tests and check code quality before commit
+and before merge. Run ``./pre-commit.sh`` and install Docker and beekeeper, and
+your code will be checked before it's committed.
+
 .. _BeeWare suite: http://pybee.org
 .. _Read The Docs: https://beefore.readthedocs.io
 .. _@pybeeware on Twitter: https://twitter.com/pybeeware
