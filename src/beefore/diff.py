@@ -1,26 +1,28 @@
+import os
 import re
 
 FILE_START = re.compile("diff --git a/(.*) b/(.*)")
 LINE_RANGE = re.compile("@@ -(\d+),(\d+) \+(\d+),(\d+) @@")
 
 
-def positions(diff, filename):
+def positions(directory, diff_content):
     """Given a diff payload, look for all the line ranges described for a given file.
 
     Returns a map of source file lines, mapped to the position in the diff
     that the line is referenced.
     """
+    directory = os.path.abspath(directory)
+    mappings = {}
     current_file = None
     start = None
     offset = None
-    for i, d in enumerate(diff):
+    for i, d in enumerate(diff_content):
         match = FILE_START.match(d)
         if match:
-            if match.group(1) == filename:
-                current_file = {}
-            else:
-                if current_file is not None:
-                    return current_file
+            current_file = {}
+
+            filename = os.path.abspath(match.group(2))[len(directory)+1:]
+            mappings[filename] = current_file
         elif current_file is not None:
             match = LINE_RANGE.match(d)
             if match:
@@ -33,5 +35,4 @@ def positions(diff, filename):
                     offset += 1
                 else:
                     current_file[i - start - offset + first_line] = i + 1
-
-    return current_file
+    return mappings

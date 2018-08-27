@@ -4,7 +4,7 @@ import re
 from setuptools import setup, find_packages
 
 
-with io.open('./beefore/__init__.py', encoding='utf8') as version_file:
+with io.open('./src/beefore/__init__.py', encoding='utf8') as version_file:
     version_match = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]", version_file.read(), re.M)
     if version_match:
         version = version_match.group(1)
@@ -25,13 +25,15 @@ setup(
     author_email='russell@keith-magee.com',
     url='http://pybee.org/beefore',
     keywords=['lint', 'merge', 'dco'],
-    packages=find_packages(exclude=['tests']),
+    packages=find_packages(where="src"),
+    package_dir={"": "src"},
     entry_points={
         'console_scripts': [
-            'beefore = beefore.command:main',
+            'beefore = beefore.__main__:main',
         ]
     },
     install_requires=[
+        'gitpython',
         'github3.py',
         'PyYAML',
         'flake8>=3.0.0b2',
@@ -44,6 +46,9 @@ setup(
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
         'Topic :: Software Development',
         'Topic :: Utilities',
     ],
