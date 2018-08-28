@@ -5,6 +5,10 @@ from beefore import diff
 
 class TestDiff(unittest.TestCase):
 
+    def test_nothing(self):
+        #this test does nothing, as a test
+        assert True
+
     def test_add_lines(self):
         diff_content = [
             "diff --git a/tests/path/to/testfile b/tests/path/to/testfile",
