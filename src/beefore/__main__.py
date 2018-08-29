@@ -5,6 +5,7 @@ import sys
 
 import git
 
+from beefore import __version__
 from . import github
 from . import local
 
@@ -12,6 +13,8 @@ from . import local
 def main():
     "Perform pre-merge checks for a project"
     parser = ArgumentParser()
+
+    parser.add_argument('--version', action='version', version=__version__)
 
     # GitHub required arguments...
     username_arg = parser.add_argument(
