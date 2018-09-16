@@ -62,25 +62,36 @@ def prepare(directory):
     pass
 
 
-def check(directory, diff_content, commit):
+def check(directory, diff_content, commit, verbosity):
     results = []
 
     lint_results = Lint.find(directory=directory)
     diff_mappings = diff.positions(directory, diff_content)
 
     for filename, problems in lint_results.items():
-        print("  * %s" % filename)
+        file_seen = False
         if filename in diff_mappings:
             for problem in sorted(problems, key=lambda p: p.line):
                 try:
                     position = diff_mappings[filename][problem.line]
+                    if not file_seen:
+                        print("  * %s" % filename)
+                        file_seen = True
                     print('    - %s' % problem)
                     results.append((problem, position))
                 except KeyError:
                     # Line doesn't exist in the diff; so we can ignore this problem
-                    print('    - Line %s not in diff' % problem.line)
+                    if verbosity:
+                        if not file_seen:
+                            print("  * %s" % filename)
+                            file_seen = True
+                        print('    - Line %s not in diff' % problem.line)
         else:
             # File has been changed, but wasn't in the diff
-            print('    - file not in diff')
+            if verbosity:
+                if not file_seen:
+                    print("  * %s" % filename)
+                    file_seen = True
+                print('    - file not in diff')
 
     return results

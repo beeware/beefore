@@ -23,7 +23,7 @@ def prepare(directory):
     pass
 
 
-def check(directory, diff_content, commit):
+def check(directory, diff_content, commit, verbosity):
     expected_signoff = '\nSigned-off-by: '
 
     if expected_signoff in commit['message']:

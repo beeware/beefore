@@ -44,7 +44,7 @@ def full_diff(repository, branch='master'):
     return content
 
 
-def check(check_module, directory, repository, branch):
+def check(check_module, directory, repository, branch, verbosity):
     print("Running %s check..." % check_module.__name__)
     print('==========' * 8)
     problems = check_module.check(
@@ -52,7 +52,8 @@ def check(check_module, directory, repository, branch):
         diff_content=full_diff(repository, branch=branch),
         commit={
             'message': repository.commit().message
-        }
+        },
+        verbosity=verbosity,
     )
     print('==========' * 8)
 

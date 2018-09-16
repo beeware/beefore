@@ -15,6 +15,7 @@ def main():
     parser = ArgumentParser()
 
     parser.add_argument('--version', action='version', version=__version__)
+    parser.add_argument('--verbosity', '-v', dest='verbosity', action='count')
 
     # GitHub required arguments...
     username_arg = parser.add_argument(
@@ -85,6 +86,7 @@ def main():
             directory=options.directory,
             repository=repository,
             branch=options.branch,
+            verbosity=options.verbosity,
         )
 
     except git.InvalidGitRepositoryError:
@@ -115,6 +117,7 @@ def main():
             repo_path=options.repo_path,
             pull_request=options.pull_request,
             sha=options.sha,
+            verbosity=options.verbosity,
         )
 
     print()

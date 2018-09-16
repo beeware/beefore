@@ -4,7 +4,7 @@ import github3
 from github3.exceptions import GitHubError
 
 
-def check(check_module, directory, username, password, repo_path, pull_request, sha):
+def check(check_module, directory, username, password, repo_path, pull_request, sha, verbosity):
     try:
         github = github3.login(username, password=password)
     except GitHubError as ghe:
@@ -56,7 +56,8 @@ def check(check_module, directory, username, password, repo_path, pull_request, 
     problems = check_module.check(
         directory=directory,
         diff_content=diff_content,
-        commit=commit.commit
+        commit=commit.commit,
+        verbosity=verbosity,
     )
 
     for problem, position in problems:
