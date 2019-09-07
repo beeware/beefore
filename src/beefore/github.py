@@ -1,7 +1,7 @@
 import sys
 
 import github3
-from github3.exceptions import GitHubError
+from github3.exceptions import GitHubError, ForbiddenError
 
 
 def check(check_module, directory, username, password, repo_path, pull_request, sha, verbosity):
@@ -60,9 +60,12 @@ def check(check_module, directory, username, password, repo_path, pull_request, 
         verbosity=verbosity,
     )
 
-    for problem, position in problems:
-        # print("ADD COMMENT", problem, position)
-        problem.add_comment(pull_request, commit, position)
+    try:
+        for problem, position in problems:
+            # print("ADD COMMENT", problem, position)
+            problem.add_comment(pull_request, commit, position)
+    except ForbiddenError:
+        print("Don't have permission to post feedback as comments on the pull request.")
 
     print('==========' * 8)
     return not problems
