@@ -24,7 +24,7 @@ jobs:
       run: |
         echo REF ${{ github.ref }}
         echo PR $(cut -d'/' -f3 <<< ${{ github.ref }})
-        beefore --username brutusthebee --repository beeware/briefcase --pull-request $(cut -d'/' -f3 <<< ${{ github.ref }}) --commit ${{ github.sha }} ${{ matrix.task }} .
+        beefore --username brutusthebee --repository ${{ github.repository }} --pull-request $(cut -d'/' -f3 <<< ${{ github.ref }}) --commit ${{ github.sha }} ${{ matrix.task }} .
 
   smoke:
     name: Smoke test
