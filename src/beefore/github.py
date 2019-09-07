@@ -6,7 +6,7 @@ from github3.exceptions import GitHubError
 
 def check(check_module, directory, username, password, repo_path, pull_request, sha, verbosity):
     try:
-        github = github3.login(username, password=password)
+        session = github3.login(username, password=password)
     except GitHubError as ghe:
         print(
             '\n'
@@ -18,7 +18,7 @@ def check(check_module, directory, username, password, repo_path, pull_request, 
     try:
         print('Loading repository %s...' % repo_path)
         owner, repo_name = repo_path.split('/')
-        repository = github.repository(owner, repo_name)
+        repository = session.repository(owner, repo_name)
     except GitHubError as ghe:
         print(
             '\n'
