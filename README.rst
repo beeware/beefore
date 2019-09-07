@@ -17,8 +17,9 @@ Beefore
 .. image:: https://img.shields.io/pypi/l/beefore.svg
     :target: https://github.com/pybee/beefore/blob/master/LICENSE
 
-.. image:: https://beekeeper.beeware.org/projects/beeware/beefore/shield
-    :target: https://beekeeper.beeware.org/projects/beeware/beefore
+.. image:: https://img.shields.io/endpoint.svg?url=https%3A%2F%2Factions-badge.atrox.dev%2Fbeeware%2Fbeefore%2Fbadge
+   :target: https://actions-badge.atrox.dev/beeware/beefore/goto
+   :alt: CI Status
 
 .. image:: https://badges.gitter.im/pybee/general.svg
     :target: https://gitter.im/pybee/general
