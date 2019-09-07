@@ -77,28 +77,12 @@ def main():
     except FileNotFoundError:
         pass
 
-    try:
-        # If the provided directory is a Git checkout, then this
-        # is a check running on a local code checkout.
-        repository = git.Repo(options.directory)
-        passed = local.check(
-            check_module=check_module,
-            directory=options.directory,
-            repository=repository,
-            branch=options.branch,
-            verbosity=options.verbosity,
-        )
-
-    except git.InvalidGitRepositoryError:
-        # Directory isn't a git checkout; that means it's a
-        # code tarball from a Github Pull Request
-
-        # Now we know it's a Github Pull Request, the Github-related
-        # command line options are mandatory.
-        # Reparse the options based on that new knowledge.
+    if options.sha:
+        # If a SHA has been provided, then use GitHub data, rather than
+        # any local git information. This also means username, repository,
+        # and pull_request are required, as well as a password in environment
         username_arg.required = True
         repository_arg.required = True
-        commit_arg.required = True
         pull_request_arg.required = True
 
         options = parser.parse_args()
@@ -119,13 +103,33 @@ def main():
             sha=options.sha,
             verbosity=options.verbosity,
         )
+    else:
+        try:
+            # If the provided directory is a Git checkout, then this
+            # is a check running on a local code checkout.
+            repository = git.Repo(options.directory)
+            passed = local.check(
+                check_module=check_module,
+                directory=options.directory,
+                repository=repository,
+                branch=options.branch,
+                verbosity=options.verbosity,
+            )
+
+        except git.InvalidGitRepositoryError:
+            # Directory isn't a local git checkout, and we don't have a SHA
+            print(
+                "%s: unable to find Git data" % options.check,
+                file=sys.err
+            )
+            sys.exit(2)
 
     print()
     if passed:
         print("%s: Pre-commit check passed." % options.check)
         sys.exit(0)
     else:
-        print("%s: Pre-commit check FAILED." % options.check)
+        print("%s: Pre-commit check FAILED." % options.check, file=sys.stderr)
         sys.exit(1)
 
 
