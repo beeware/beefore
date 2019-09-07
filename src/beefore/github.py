@@ -65,6 +65,7 @@ def check(check_module, directory, username, password, repo_path, pull_request, 
             # print("ADD COMMENT", problem, position)
             problem.add_comment(pull_request, commit, position)
     except ForbiddenError:
+        print('----------' * 8)
         print("Don't have permission to post feedback as comments on the pull request.")
 
     print('==========' * 8)
