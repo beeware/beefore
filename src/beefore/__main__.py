@@ -1,13 +1,13 @@
-from argparse import ArgumentParser
 import importlib
 import os
 import sys
+from argparse import ArgumentParser
 
 import git
 
 from beefore import __version__
-from . import github
-from . import local
+
+from . import github, local
 
 
 def main():
@@ -18,7 +18,7 @@ def main():
     parser.add_argument('--verbosity', '-v', dest='verbosity', action='count')
 
     # GitHub required arguments...
-    username_arg = parser.add_argument(
+    parser.add_argument(
         '--username', '-u', dest='username',
         help='The GitHub username to use when updating the project.'
     )
@@ -26,7 +26,7 @@ def main():
         '--repository', '-r', dest='repo_path',
         help='The name of the repository that contains the pull request.'
     )
-    commit_arg = parser.add_argument(
+    parser.add_argument(
         '--commit=', '-c', dest='sha',
         help='The hash of the commit to be checked.'
     )
@@ -79,9 +79,8 @@ def main():
 
     if options.sha:
         # If a SHA has been provided, then use GitHub data, rather than
-        # any local git information. This also means username, repository,
-        # and pull_request are required, as well as a password in environment
-        username_arg.required = True
+        # any local git information. This also means repository and
+        # pull_request are required, as well as a password in environment
         repository_arg.required = True
         pull_request_arg.required = True
 
@@ -89,7 +88,7 @@ def main():
 
         try:
             options.password = os.environ['GITHUB_ACCESS_TOKEN']
-        except KeyError as e:
+        except KeyError:
             print("GITHUB_ACCESS_TOKEN not found")
             sys.exit(1)
 

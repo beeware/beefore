@@ -1,7 +1,7 @@
 import sys
 
 import github3
-from github3.exceptions import GitHubError, ForbiddenError
+from github3.exceptions import GitHubError
 
 
 def check(check_module, directory, username, password, repo_path, pull_request, sha, verbosity):
@@ -29,7 +29,7 @@ def check(check_module, directory, username, password, repo_path, pull_request, 
 
     try:
         print('Loading pull request #%s...' % pull_request)
-        pull_request = repository.pull_request(pull_request)
+        pr = repository.pull_request(pull_request)
     except GitHubError as ghe:
         print(
             '\n'
@@ -49,7 +49,7 @@ def check(check_module, directory, username, password, repo_path, pull_request, 
         )
         sys.exit(13)
 
-    diff_content = pull_request.diff().decode('utf-8').split('\n')
+    diff_content = pr.diff().decode('utf-8').split('\n')
 
     print("Running Github %s check..." % check_module.__name__)
     print('==========' * 8)
@@ -63,10 +63,10 @@ def check(check_module, directory, username, password, repo_path, pull_request, 
     try:
         for problem, position in problems:
             # print("ADD COMMENT", problem, position)
-            problem.add_comment(pull_request, commit, position)
-    except ForbiddenError:
+            problem.add_comment(pr, commit, position)
+    except GitHubError as ghe:
         print('----------' * 8)
-        print("Don't have permission to post feedback as comments on the pull request.")
+        print("Can't post comment on pull request: %s" % ghe)
 
     print('==========' * 8)
     return not problems
