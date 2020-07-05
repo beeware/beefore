@@ -1,3 +1,8 @@
+THIS PROJECT HAS BEEN ARCHIVED
+==============================
+
+**The BeeWare Project has stopped using Beefore for pre-commit checks; we have migrated all our pre-commit checks to Tox configurations run by Github Actions.** 
+
 .. image:: https://beeware.org/project/projects/tools/beefore/beefore.png
     :width: 72px
     :target: https://beeware.org/beefore
